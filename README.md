@@ -1,2 +1,1 @@
-# program-ML-jlabs
-Java labs for the "Programming Machine Learning" book
+This repository contains Java labs for the ["Programming Machine Learning" book](https://pragprog.com/titles/pplearn/programming-machine-learning/). The original book's labs are in Python, but in order to understand everything better and have more fun I've decided to try to implement interesting parts in Java language.
