@@ -1,3 +1,5 @@
 #!/bin/sh
 target_dir="$(dirname ${0})/target"
-java -cp "${target_dir}/pml-jlabs.jar:${target_dir}/dependencies/*" "com.dmytrobilokha.pmljlabs.${1}"
+class_name="${1}"
+shift
+java -cp "${target_dir}/pml-jlabs.jar:${target_dir}/dependencies/*" "com.dmytrobilokha.pmljlabs.${class_name}" "$@"
