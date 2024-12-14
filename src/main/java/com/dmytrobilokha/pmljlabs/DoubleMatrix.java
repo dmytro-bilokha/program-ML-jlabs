@@ -13,6 +13,7 @@ import java.util.function.DoubleUnaryOperator;
  */
 public class DoubleMatrix {
 
+    public static final DoubleMatrix NULL = new DoubleMatrix(0, 0, 0, 0, new double[0][0]);
     public static final int BLOCK_SIZE = 52;
     private final double[][] blocks;
     private final int rows;
