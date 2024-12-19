@@ -83,4 +83,67 @@ public class DoubleMatrixTest {
         }
     }
 
+    public void splits8rowsInBatches() {
+        double[][] input2dArray = new double[][]{
+                {1, 2, 3},
+                {4, 5, 6},
+                {7, 8, 9},
+                {10, 11, 12},
+                {13, 14, 15},
+                {16, 17, 18},
+                {19, 20, 21},
+                {22, 23, 24}
+        };
+        var inputMatrix = DoubleMatrix.with2dArray(input2dArray);
+        var batches = inputMatrix.splitRowsInBatches(3);
+        Assert.assertEquals(batches.size(), 3);
+        var firstBatchMatrix = batches.get(0);
+        var firstBatchArray = firstBatchMatrix.getData();
+        Assert.assertEquals(firstBatchMatrix.getRowDimension(), 3);
+        Assert.assertEquals(firstBatchMatrix.getColumnDimension(), 3);
+        Assert.assertEquals(firstBatchArray[0], input2dArray[0]);
+        Assert.assertEquals(firstBatchArray[1], input2dArray[1]);
+        Assert.assertEquals(firstBatchArray[2], input2dArray[2]);
+        var secondBatchMatrix = batches.get(1);
+        var secondBatchArray = secondBatchMatrix.getData();
+        Assert.assertEquals(secondBatchMatrix.getRowDimension(), 3);
+        Assert.assertEquals(secondBatchMatrix.getColumnDimension(), 3);
+        Assert.assertEquals(secondBatchArray[0], input2dArray[3]);
+        Assert.assertEquals(secondBatchArray[1], input2dArray[4]);
+        Assert.assertEquals(secondBatchArray[2], input2dArray[5]);
+        var thirdBatchMatrix = batches.get(2);
+        var thirdBatchArray = thirdBatchMatrix.getData();
+        Assert.assertEquals(thirdBatchMatrix.getRowDimension(), 2);
+        Assert.assertEquals(thirdBatchMatrix.getColumnDimension(), 3);
+        Assert.assertEquals(thirdBatchArray[0], input2dArray[6]);
+        Assert.assertEquals(thirdBatchArray[1], input2dArray[7]);
+    }
+
+    public void splits6RowsInBatches() {
+        double[][] input2dArray = new double[][]{
+                {1, 2, 3},
+                {4, 5, 6},
+                {7, 8, 9},
+                {10, 11, 12},
+                {13, 14, 15},
+                {16, 17, 18},
+        };
+        var inputMatrix = DoubleMatrix.with2dArray(input2dArray);
+        var batches = inputMatrix.splitRowsInBatches(3);
+        Assert.assertEquals(batches.size(), 2);
+        var firstBatchMatrix = batches.get(0);
+        var firstBatchArray = firstBatchMatrix.getData();
+        Assert.assertEquals(firstBatchMatrix.getRowDimension(), 3);
+        Assert.assertEquals(firstBatchMatrix.getColumnDimension(), 3);
+        Assert.assertEquals(firstBatchArray[0], input2dArray[0]);
+        Assert.assertEquals(firstBatchArray[1], input2dArray[1]);
+        Assert.assertEquals(firstBatchArray[2], input2dArray[2]);
+        var secondBatchMatrix = batches.get(1);
+        var secondBatchArray = secondBatchMatrix.getData();
+        Assert.assertEquals(secondBatchMatrix.getRowDimension(), 3);
+        Assert.assertEquals(secondBatchMatrix.getColumnDimension(), 3);
+        Assert.assertEquals(secondBatchArray[0], input2dArray[3]);
+        Assert.assertEquals(secondBatchArray[1], input2dArray[4]);
+        Assert.assertEquals(secondBatchArray[2], input2dArray[5]);
+    }
 }

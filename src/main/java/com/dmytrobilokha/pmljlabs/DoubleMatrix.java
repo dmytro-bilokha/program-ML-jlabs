@@ -5,6 +5,8 @@ import org.apache.commons.math3.exception.OutOfRangeException;
 
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.function.DoubleSupplier;
 import java.util.function.DoubleUnaryOperator;
@@ -494,6 +496,21 @@ public class DoubleMatrix {
 
     public DoubleMatrix cutOffFirstRows(int numberOfRows) {
         return getSubMatrix(numberOfRows, rows - 1, 0, columns - 1);
+    }
+
+    public List<DoubleMatrix> splitRowsInBatches(int batchSize) {
+       if (batchSize < 1) {
+           throw new IllegalArgumentException("Minimum batch size is 1, but got " + batchSize);
+       }
+       var batches = new ArrayList<DoubleMatrix>();
+       int leftoverBatchSize = rows % batchSize;
+       for (int startRow = 0, endRow = batchSize - 1; endRow < rows; startRow += batchSize, endRow += batchSize) {
+           batches.add(getSubMatrix(startRow, endRow, 0, columns - 1));
+       }
+       if (leftoverBatchSize > 0) {
+           batches.add(getSubMatrix(rows - leftoverBatchSize, rows - 1, 0, columns - 1));
+       }
+       return batches;
     }
 
     public DoubleMatrix getSubMatrix(final int startRow, final int endRow,
