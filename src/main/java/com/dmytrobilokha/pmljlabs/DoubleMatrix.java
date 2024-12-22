@@ -68,6 +68,10 @@ public class DoubleMatrix {
         return new DoubleMatrix(m.rows, m.columns, m.blockRows, m.blockColumns, createFilledBlocksLayout(m.rows, m.columns, () -> 1d));
     }
 
+    public static DoubleMatrix ofValuesSizedAs(double value, DoubleMatrix m) {
+        return new DoubleMatrix(m.rows, m.columns, m.blockRows, m.blockColumns, createFilledBlocksLayout(m.rows, m.columns, () -> value));
+    }
+
     public static DoubleMatrix with2dArray(double[][] array) {
         int rows = array.length;
         if (rows < 1) {
@@ -288,6 +292,30 @@ public class DoubleMatrix {
             final double[] tBlock = blocks[blockIndex];
             for (int k = 0; k < outBlock.length; ++k) {
                 outBlock[k] = tBlock[k] * s;
+            }
+        }
+        return new DoubleMatrix(rows, columns, blockRows, blockColumns, outBlocks);
+    }
+
+    public DoubleMatrix scalarDivide(double s) {
+        double[][] outBlocks = createBlocksLayout(rows, columns);
+        for (int blockIndex = 0; blockIndex < outBlocks.length; ++blockIndex) {
+            final double[] outBlock = outBlocks[blockIndex];
+            final double[] tBlock = blocks[blockIndex];
+            for (int k = 0; k < outBlock.length; ++k) {
+                outBlock[k] = tBlock[k] / s;
+            }
+        }
+        return new DoubleMatrix(rows, columns, blockRows, blockColumns, outBlocks);
+    }
+
+    public DoubleMatrix scalarAdd(double s) {
+        double[][] outBlocks = createBlocksLayout(rows, columns);
+        for (int blockIndex = 0; blockIndex < outBlocks.length; ++blockIndex) {
+            final double[] outBlock = outBlocks[blockIndex];
+            final double[] tBlock = blocks[blockIndex];
+            for (int k = 0; k < outBlock.length; ++k) {
+                outBlock[k] = tBlock[k] + s;
             }
         }
         return new DoubleMatrix(rows, columns, blockRows, blockColumns, outBlocks);
