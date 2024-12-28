@@ -60,6 +60,13 @@ public class DoubleMatrix {
         return new DoubleMatrix(rows, columns, blockRows, blockColumns, createFilledBlocksLayout(rows, columns, randomGenerator::nextGaussian));
     }
 
+    public static DoubleMatrix ofUniRandoms(int rows, int columns) {
+        ensureCreatableSize(rows, columns);
+        int blockRows = (rows + BLOCK_SIZE - 1) / BLOCK_SIZE;
+        int blockColumns = (columns + BLOCK_SIZE - 1) / BLOCK_SIZE;
+        return new DoubleMatrix(rows, columns, blockRows, blockColumns, createFilledBlocksLayout(rows, columns, randomGenerator::nextDouble));
+    }
+
     public static DoubleMatrix ofZerosSizedAs(DoubleMatrix m) {
         return new DoubleMatrix(m.rows, m.columns, m.blockRows, m.blockColumns, createBlocksLayout(m.rows, m.columns));
     }
@@ -283,6 +290,24 @@ public class DoubleMatrix {
             }
         }
         return new DoubleMatrix(rows, 1, blockRows, 1, outBlocks);
+    }
+
+    public String toString(String columnSeparator, String rowSeparator) {
+        var outputBuilder = new StringBuilder();
+        double[][] data = getData();
+        for (int row = 0; row < rows; row++) {
+            double[] rowData = data[row];
+            if (row != 0) {
+                outputBuilder.append(rowSeparator);
+            }
+            for (int column = 0; column < columns; column++) {
+                if (column != 0) {
+                    outputBuilder.append(columnSeparator);
+                }
+                outputBuilder.append(rowData[column]);
+            }
+        }
+        return outputBuilder.toString();
     }
 
     public DoubleMatrix scalarMultiply(double s) {

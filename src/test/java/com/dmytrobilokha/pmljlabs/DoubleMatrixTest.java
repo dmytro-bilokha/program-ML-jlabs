@@ -5,6 +5,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @Test(groups = "unit")
 public class DoubleMatrixTest {
@@ -81,6 +82,16 @@ public class DoubleMatrixTest {
                 Assert.assertEquals(resultRowArray[column], inputRowArray[column] / divisor);
             }
         }
+    }
+
+    @Test(dataProvider = "generic2dArraysProvider")
+    public void exportsToString(double [][] input2dArray) {
+        var inputMatrix = DoubleMatrix.with2dArray(input2dArray);
+        var expectedString = Arrays.stream(input2dArray)
+                .map(Arrays::toString)
+                .collect(Collectors.joining(System.lineSeparator()));
+        var actualString = "[" + inputMatrix.toString(", " , "]" + System.lineSeparator() + "[") + "]";
+        Assert.assertEquals(actualString, expectedString);
     }
 
     public void splits8rowsInBatches() {
