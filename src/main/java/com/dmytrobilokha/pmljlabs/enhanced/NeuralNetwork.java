@@ -52,7 +52,15 @@ public class NeuralNetwork {
         }
         var startMessage = "Starting all at " + LocalDateTime.now();
         System.out.println(startMessage);
-        var wPair = train(xTrain, yTrain, reportingQueue, 100, 10, 256, 1d);
+        int hiddenNodes = 100;
+        int epochs = 10;
+        int batchSize = 128;
+        double lr = 0.25d;
+        int reportPeriod = 5;
+        var paramsMessage = "Hyperparameters: hiddenNodes=" + hiddenNodes +
+                ", epochs=" + epochs + ", batchSize=" + batchSize + ", lr=" + lr + ", reportPeriod=" + reportPeriod;
+        System.out.println(paramsMessage);
+        var wPair = train(xTrain, yTrain, reportingQueue, hiddenNodes, epochs, batchSize, lr, reportPeriod);
         var endTrainingMessage = "Finished training at " + LocalDateTime.now();
         System.out.println(endTrainingMessage);
         dumpMatrixToFile(reportBaseFilename + ".w1", wPair.first());
@@ -78,7 +86,7 @@ public class NeuralNetwork {
         var endReportingMessage = "Finished reporting at " + LocalDateTime.now();
         System.out.println(endReportingMessage);
         FileUtil.writeLinesToFile(reportBaseFilename + ".system",
-            List.of(startMessage, endTrainingMessage, endReportingMessage));
+            List.of(startMessage, paramsMessage, endTrainingMessage, endReportingMessage));
         FileUtil.writeLinesToFile(reportBaseFilename + ".lstat",
                 reportOutputLines.stream()
                         .map(line -> line.epoch() + " " + line.batch() + " " + line.trainingLoss() + " " + line.matchesPercentage())
@@ -99,12 +107,11 @@ public class NeuralNetwork {
     }
 
     private static double calculateReLu(double z) {
-        return z <= 0 ? 0d : z;
+        return z <= 0d ? 0d : z;
     }
 
     private static DoubleMatrix calculateReLuGradient(DoubleMatrix s) {
-        // TODO : implement
-        return null;
+        return s.apply(z -> z <= 0d ? 0d : 1d);
     }
 
     private static MatrixPair standardizeInput(DoubleMatrix xTrain, DoubleMatrix xTest) {
@@ -131,7 +138,7 @@ public class NeuralNetwork {
     }
 
     private static MatrixPair calculateForward(DoubleMatrix x, DoubleMatrix w1, DoubleMatrix w2) {
-        var h = x.prependColumn(1d).multiply(w1).apply(NeuralNetwork::calculateSigmoid);
+        var h = x.prependColumn(1d).multiply(w1).apply(NeuralNetwork::calculateReLu);
         var yHat = calculateSoftmax(h.prependColumn(1d).multiply(w2));
         return new MatrixPair(yHat, h);
     }
@@ -175,7 +182,7 @@ public class NeuralNetwork {
                 .transpose()
                 .multiply(
                         yHatMinusY.multiply(w2.cutOffFirstRows(1).transpose())
-                                .multiplyElements(calculateSigmoidGradient(h))
+                                .multiplyElements(calculateReLuGradient(h))
                 )
                 .scalarMultiply( 1d / x.getRowDimension());
         return new MatrixPair(w1Gradient, w2Gradient);
@@ -188,7 +195,8 @@ public class NeuralNetwork {
             int hiddenNodes,
             int epochs,
             int batchSize,
-            double lr) {
+            double lr,
+            int reportPeriod) {
         int inputVariables = xTrain.getColumnDimension();
         int classes = yTrain.getColumnDimension();
         var initialWeights = initWeights(inputVariables, hiddenNodes, classes);
@@ -206,7 +214,9 @@ public class NeuralNetwork {
                 MatrixPair gradients = calculateBack(xBatch, yBatch, yHat, w2, h);
                 w1 = w1.subtract(gradients.first().scalarMultiply(lr));
                 w2 = w2.subtract(gradients.second().scalarMultiply(lr));
-                reportingQueue.add(new ReportingTask(epoch, batch, w1, w2));
+                if (batch % reportPeriod == 0) {
+                    reportingQueue.add(new ReportingTask(epoch, batch, w1, w2));
+                }
             }
         }
         return new MatrixPair(w1, w2);

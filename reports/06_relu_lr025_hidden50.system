@@ -1,0 +1,4 @@
+Starting all at 2024-12-29T17:25:48.156543034
+Hyperparameters: hiddenNodes=50, epochs=10, batchSize=256, lr=0.25, reportPeriod=5
+Finished training at 2024-12-29T17:26:31.352859620
+Finished reporting at 2024-12-29T17:27:42.341698774
