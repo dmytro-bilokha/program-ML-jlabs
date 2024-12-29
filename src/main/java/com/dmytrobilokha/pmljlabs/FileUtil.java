@@ -1,11 +1,11 @@
 package com.dmytrobilokha.pmljlabs;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
@@ -38,6 +38,29 @@ public class FileUtil {
             return gzipInputStream.readAllBytes();
         } catch (IOException e) {
             throw new RuntimeException("Unable to read data from the file: " + filePath, e);
+        }
+    }
+
+    public static void writeLinesToFile(String filePath, Iterable<String> lines) {
+        try (var writer = Files.newBufferedWriter(
+                Path.of(filePath),
+                StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+            for (var line : lines) {
+                writer.write(line);
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write lines to file", e);
+        }
+    }
+
+    public static void writeStringToFile(String filePath, String data) {
+        try (var writer = Files.newBufferedWriter(
+                Path.of(filePath),
+                StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+            writer.write(data);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write string to file", e);
         }
     }
 

@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -20,14 +21,20 @@ public class NeuralNetwork {
     private static final int NUMBER_OF_LABELS = 10;
     private static final int NUMBER_OF_REPORTERS = 10;
     public static void main(String[] cliArgs) {
-        if (cliArgs.length != 4) {
-            System.err.println("Expected arguments: first - train image file, second - train label file, third - test image, forth - test label");
+        if (cliArgs.length != 5) {
+            System.err.println("Expected arguments:");
+            System.err.println("1 - train image file");
+            System.err.println("2 - train label file");
+            System.err.println("3 - test image file");
+            System.err.println("4 - test label file");
+            System.err.println("5 - report base filename");
             System.exit(1);
         }
         var xTrainRaw = readMnistImageFile(cliArgs[0]);
         var yTrain = encodeMnistLabels(readMnistLabelFile(cliArgs[1]));
         var xTestRaw = readMnistImageFile(cliArgs[2]);
         int[] yTestAll = readMnistLabelFile(cliArgs[3]);
+        var reportBaseFilename = cliArgs[4];
         int[] yValidation = Arrays.copyOfRange(yTestAll, 0, yTestAll.length / 2 - 1);
         int[] yTest = Arrays.copyOfRange(yTestAll, yTestAll.length / 2, yTestAll.length - 1);
         var xStandardized = standardizeInput(xTrainRaw, xTestRaw);
@@ -43,9 +50,15 @@ public class NeuralNetwork {
             reporter.start();
             reporters.add(reporter);
         }
-        System.out.println("Starting all at " + LocalDateTime.now());
+        var startMessage = "Starting all at " + LocalDateTime.now();
+        System.out.println(startMessage);
         var wPair = train(xTrain, yTrain, reportingQueue, 100, 10, 256, 1d);
-        System.out.println("Finished training at " + LocalDateTime.now());
+        var endTrainingMessage = "Finished training at " + LocalDateTime.now();
+        System.out.println(endTrainingMessage);
+        dumpMatrixToFile(reportBaseFilename + ".w1", wPair.first());
+        dumpMatrixToFlatFile(reportBaseFilename + ".w1.flat", wPair.first());
+        dumpMatrixToFile(reportBaseFilename + ".w2", wPair.second());
+        dumpMatrixToFlatFile(reportBaseFilename + ".w2.flat", wPair.second());
         // Wait until reporters process all the tasks
         try {
             while (!reportingQueue.isEmpty()) {
@@ -62,18 +75,36 @@ public class NeuralNetwork {
         } catch (InterruptedException e) {
             throw new RuntimeException("Got interrupted while waiting for reporters to stop", e);
         }
-        System.out.println("Finished reporting at " + LocalDateTime.now());
-        for (ReportingLine line : reportOutputLines) {
-            System.out.println(line.epoch() + " " + line.batch() + " " + line.trainingLoss() + " " + line.matchesPercentage());
-        }
-        System.out.println("---- w1 values ----");
-        System.out.println(wPair.first().toString(" ", System.lineSeparator()));
-        System.out.println(System.lineSeparator() + "---- w2 values ----");
-        System.out.println(wPair.second().toString(" ", System.lineSeparator()));
+        var endReportingMessage = "Finished reporting at " + LocalDateTime.now();
+        System.out.println(endReportingMessage);
+        FileUtil.writeLinesToFile(reportBaseFilename + ".system",
+            List.of(startMessage, endTrainingMessage, endReportingMessage));
+        FileUtil.writeLinesToFile(reportBaseFilename + ".lstat",
+                reportOutputLines.stream()
+                        .map(line -> line.epoch() + " " + line.batch() + " " + line.trainingLoss() + " " + line.matchesPercentage())
+                        .toList()
+        );
+    }
+
+    private static void dumpMatrixToFlatFile(String filePath, DoubleMatrix matrix) {
+        FileUtil.writeStringToFile(filePath, matrix.toString(System.lineSeparator(), System.lineSeparator()));
+    }
+
+    private static void dumpMatrixToFile(String filePath, DoubleMatrix matrix) {
+        FileUtil.writeStringToFile(filePath, matrix.toString(" ", System.lineSeparator()));
     }
 
     private static double calculateSigmoid(double z) {
         return 1d / (1d + Math.exp(-z));
+    }
+
+    private static double calculateReLu(double z) {
+        return z <= 0 ? 0d : z;
+    }
+
+    private static DoubleMatrix calculateReLuGradient(DoubleMatrix s) {
+        // TODO : implement
+        return null;
     }
 
     private static MatrixPair standardizeInput(DoubleMatrix xTrain, DoubleMatrix xTest) {
